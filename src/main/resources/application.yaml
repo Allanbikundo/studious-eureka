@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: Starter
+  profiles:
+    active: local
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: ${keycloak.server-url}/realms/${keycloak.realm}
+
+server:
+  servlet:
+    context-path: '/api'
+
+keycloak:
+  realm: latitude
+  server-url: https://keycloak.ambience.co.ke
+  client-id: aggregator-backend
+  client-secret: RzBmZ82b3iWWBiUC9V2QQYHjUiD3mxdo
+
+logging:
+  level:
+    root: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  mail:
+    host: localhost
+    port: 1025
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  mail:
+    host: smtp.example.com
+    port: 587
+    username: user@example.com
+    password: password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
