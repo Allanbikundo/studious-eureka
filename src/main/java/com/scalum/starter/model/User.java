@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,12 +14,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = false)
-@Table(name = "users") // "user" is a reserved keyword in some databases
+@Table(name = "users")
 public class User extends Auditable implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(unique = true)
     private String externalId;
@@ -35,7 +36,7 @@ public class User extends Auditable implements UserDetails {
     @Column(unique = true)
     private String keycloakId;
 
-    private String password; // Required by UserDetails, but will be null
+    private String password;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))

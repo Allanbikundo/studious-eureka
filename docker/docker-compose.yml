@@ -5,3 +5,18 @@ services:
     ports:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web UI
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: scalum
+      POSTGRES_USER: scalum
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgres_data:
