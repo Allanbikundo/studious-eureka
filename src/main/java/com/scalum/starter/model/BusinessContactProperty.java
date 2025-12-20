@@ -2,12 +2,16 @@ package com.scalum.starter.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Entity
 @Data
 @Table(name = "business_contact_property", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"contact_id", "property_key"})
 })
+@EqualsAndHashCode(exclude = "contact")
+@ToString(exclude = "contact")
 public class BusinessContactProperty {
 
     @Id

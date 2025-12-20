@@ -1,7 +1,9 @@
 package com.scalum.starter.domain.business;
 
-import com.scalum.starter.dto.BusinessContactDTO;
-import com.scalum.starter.dto.CreateBusinessContactDTO;
+import com.scalum.starter.domain.evolution.EvolutionApiClient;
+import com.scalum.starter.domain.evolution.dto.ConnectInstanceResponse;
+import com.scalum.starter.domain.evolution.dto.CreateInstanceResponse;
+import com.scalum.starter.dto.*;
 import com.scalum.starter.model.Business;
 import com.scalum.starter.model.BusinessContact;
 import com.scalum.starter.model.BusinessContactProperty;
@@ -9,11 +11,13 @@ import com.scalum.starter.model.ContactPropertyKey;
 import com.scalum.starter.repository.BusinessContactPropertyRepository;
 import com.scalum.starter.repository.BusinessContactRepository;
 import com.scalum.starter.repository.BusinessRepository;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +30,68 @@ public class BusinessContactService {
     private final BusinessContactRepository contactRepository;
     private final BusinessContactPropertyRepository propertyRepository;
     private final BusinessRepository businessRepository;
+    private final EvolutionApiClient evolutionApiClient;
+
+    @Transactional
+    public BusinessContactWithInstanceDTO createContactAndInstance(UUID businessId, CreateInstanceAndContactDTO createDTO) {
+        String instanceName = "biz_" + businessId.toString().replaceAll("-", "").substring(0, 10) + "_" + createDTO.getValue().replaceAll("[^0-9]", "");
+        String instanceToken = UUID.randomUUID().toString();
+
+        CreateInstanceResponse instanceResponse = evolutionApiClient.createInstance(instanceName, instanceToken);
+
+        if (instanceResponse.getInstance() == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to retrieve instance details from Evolution API after creation.");
+        }
+
+        Map<ContactPropertyKey, String> properties = new HashMap<>();
+        properties.put(ContactPropertyKey.INSTANCE_ID, instanceResponse.getInstance().getInstanceName());
+        properties.put(ContactPropertyKey.API_TOKEN, instanceResponse.getHash());
+
+        CreateBusinessContactDTO contactDTO = new CreateBusinessContactDTO();
+        contactDTO.setType(createDTO.getType());
+        contactDTO.setValue(createDTO.getValue());
+        contactDTO.setLabel(createDTO.getLabel());
+        contactDTO.setPrimary(createDTO.isPrimary());
+        contactDTO.setProperties(properties);
+
+        BusinessContactDTO createdContact = createContact(businessId, contactDTO);
+
+        BusinessContactWithInstanceDTO resultDTO = new BusinessContactWithInstanceDTO();
+        BeanUtils.copyProperties(createdContact, resultDTO);
+        resultDTO.setInstanceName(instanceResponse.getInstance().getInstanceName());
+        resultDTO.setInstanceStatus(instanceResponse.getInstance().getStatus());
+
+        return resultDTO;
+    }
+
+    @Transactional(readOnly = true)
+    public BusinessContactWithQrDTO connectContactInstance(Long contactId) {
+        BusinessContact contact = contactRepository.findById(contactId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
+
+        String instanceName = contact.getProperties().stream()
+                .filter(p -> p.getKey() == ContactPropertyKey.INSTANCE_ID)
+                .findFirst()
+                .map(BusinessContactProperty::getValue)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Instance ID not configured for this contact"));
+
+        ConnectInstanceResponse connectResponse = evolutionApiClient.connectInstance(instanceName)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Instance not found in Evolution API"));
+
+        BusinessContactDTO contactDTO = convertToDTO(contact);
+        BusinessContactWithQrDTO resultDTO = new BusinessContactWithQrDTO();
+        BeanUtils.copyProperties(contactDTO, resultDTO);
+        
+        CreateInstanceResponse.Qrcode qrCode = new CreateInstanceResponse.Qrcode();
+        qrCode.setBase64(connectResponse.getBase64());
+        qrCode.setCode(connectResponse.getCode());
+        
+        resultDTO.setQrcode(qrCode);
+        resultDTO.setInstanceName(instanceName);
+
+        return resultDTO;
+    }
+
 
     @Transactional(readOnly = true)
     public List<BusinessContactDTO> getContactsByBusinessId(UUID businessId) {
@@ -85,14 +151,7 @@ public class BusinessContactService {
         contact.setLabel(updateDTO.getLabel());
         contact.setPrimary(updateDTO.isPrimary());
 
-        // Update properties
         if (updateDTO.getProperties() != null) {
-            // Remove existing properties not in the new map? Or merge?
-            // Usually full update replaces everything.
-            // But here we have a list in entity.
-            
-            // Simple approach: clear and re-add. 
-            // Note: orphanRemoval=true on entity handles deletion.
             contact.getProperties().clear();
             
             updateDTO.getProperties().forEach((key, value) -> {

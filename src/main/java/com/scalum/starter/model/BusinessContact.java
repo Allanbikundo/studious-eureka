@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Entity
 @Data
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = false, exclude = "properties")
+@ToString(exclude = "properties")
 @Table(name = "business_contact")
 public class BusinessContact extends Auditable {
 

@@ -1,8 +1,7 @@
 package com.scalum.starter.controller;
 
 import com.scalum.starter.domain.business.BusinessContactService;
-import com.scalum.starter.dto.BusinessContactDTO;
-import com.scalum.starter.dto.CreateBusinessContactDTO;
+import com.scalum.starter.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -21,6 +20,21 @@ public class BusinessContactController {
 
     private final BusinessContactService contactService;
 
+    @PostMapping("/businesses/{businessId}/contacts/instance")
+    @Operation(summary = "Create a business contact and a new Evolution API instance")
+    public ResponseEntity<BusinessContactWithInstanceDTO> createContactAndInstance(
+            @PathVariable UUID businessId,
+            @Valid @RequestBody CreateInstanceAndContactDTO createDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(contactService.createContactAndInstance(businessId, createDTO));
+    }
+
+    @GetMapping("/contacts/{contactId}/connect")
+    @Operation(summary = "Get a new QR code to connect an existing instance")
+    public ResponseEntity<BusinessContactWithQrDTO> connectInstance(@PathVariable Long contactId) {
+        return ResponseEntity.ok(contactService.connectContactInstance(contactId));
+    }
+
     @GetMapping("/businesses/{businessId}/contacts")
     @Operation(summary = "List contacts for a business")
     public ResponseEntity<List<BusinessContactDTO>> getContactsByBusiness(@PathVariable UUID businessId) {
@@ -28,7 +42,7 @@ public class BusinessContactController {
     }
 
     @PostMapping("/businesses/{businessId}/contacts")
-    @Operation(summary = "Create a contact for a business")
+    @Operation(summary = "Create a contact for a business (without Evolution API instance)")
     public ResponseEntity<BusinessContactDTO> createContact(
             @PathVariable UUID businessId,
             @Valid @RequestBody CreateBusinessContactDTO createDTO) {
