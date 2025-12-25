@@ -33,18 +33,27 @@ public class BusinessContactService {
     private final EvolutionApiClient evolutionApiClient;
 
     @Transactional
-    public BusinessContactWithInstanceDTO createContactAndInstance(UUID businessId, CreateInstanceAndContactDTO createDTO) {
-        String instanceName = "biz_" + businessId.toString().replaceAll("-", "").substring(0, 10) + "_" + createDTO.getValue().replaceAll("[^0-9]", "");
+    public BusinessContactWithInstanceDTO createContactAndInstance(
+            UUID businessId, CreateInstanceAndContactDTO createDTO) {
+        String instanceName =
+                "biz_"
+                        + businessId.toString().replaceAll("-", "").substring(0, 10)
+                        + "_"
+                        + createDTO.getValue().replaceAll("[^0-9]", "");
         String instanceToken = UUID.randomUUID().toString();
 
-        CreateInstanceResponse instanceResponse = evolutionApiClient.createInstance(instanceName, instanceToken);
+        CreateInstanceResponse instanceResponse =
+                evolutionApiClient.createInstance(instanceName, instanceToken);
 
         if (instanceResponse.getInstance() == null) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to retrieve instance details from Evolution API after creation.");
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Failed to retrieve instance details from Evolution API after creation.");
         }
 
         Map<ContactPropertyKey, String> properties = new HashMap<>();
-        properties.put(ContactPropertyKey.INSTANCE_ID, instanceResponse.getInstance().getInstanceName());
+        properties.put(
+                ContactPropertyKey.INSTANCE_ID, instanceResponse.getInstance().getInstanceName());
         properties.put(ContactPropertyKey.API_TOKEN, instanceResponse.getHash());
 
         CreateBusinessContactDTO contactDTO = new CreateBusinessContactDTO();
@@ -66,32 +75,47 @@ public class BusinessContactService {
 
     @Transactional(readOnly = true)
     public BusinessContactWithQrDTO connectContactInstance(Long contactId) {
-        BusinessContact contact = contactRepository.findById(contactId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
+        BusinessContact contact =
+                contactRepository
+                        .findById(contactId)
+                        .orElseThrow(
+                                () ->
+                                        new ResponseStatusException(
+                                                HttpStatus.NOT_FOUND, "Contact not found"));
 
-        String instanceName = contact.getProperties().stream()
-                .filter(p -> p.getKey() == ContactPropertyKey.INSTANCE_ID)
-                .findFirst()
-                .map(BusinessContactProperty::getValue)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Instance ID not configured for this contact"));
+        String instanceName =
+                contact.getProperties().stream()
+                        .filter(p -> p.getKey() == ContactPropertyKey.INSTANCE_ID)
+                        .findFirst()
+                        .map(BusinessContactProperty::getValue)
+                        .orElseThrow(
+                                () ->
+                                        new ResponseStatusException(
+                                                HttpStatus.BAD_REQUEST,
+                                                "Instance ID not configured for this contact"));
 
-        ConnectInstanceResponse connectResponse = evolutionApiClient.connectInstance(instanceName)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Instance not found in Evolution API"));
+        ConnectInstanceResponse connectResponse =
+                evolutionApiClient
+                        .connectInstance(instanceName)
+                        .orElseThrow(
+                                () ->
+                                        new ResponseStatusException(
+                                                HttpStatus.NOT_FOUND,
+                                                "Instance not found in Evolution API"));
 
         BusinessContactDTO contactDTO = convertToDTO(contact);
         BusinessContactWithQrDTO resultDTO = new BusinessContactWithQrDTO();
         BeanUtils.copyProperties(contactDTO, resultDTO);
-        
+
         CreateInstanceResponse.Qrcode qrCode = new CreateInstanceResponse.Qrcode();
         qrCode.setBase64(connectResponse.getBase64());
         qrCode.setCode(connectResponse.getCode());
-        
+
         resultDTO.setQrcode(qrCode);
         resultDTO.setInstanceName(instanceName);
 
         return resultDTO;
     }
-
 
     @Transactional(readOnly = true)
     public List<BusinessContactDTO> getContactsByBusinessId(UUID businessId) {
@@ -105,15 +129,24 @@ public class BusinessContactService {
 
     @Transactional(readOnly = true)
     public BusinessContactDTO getContactById(Long id) {
-        return contactRepository.findById(id)
+        return contactRepository
+                .findById(id)
                 .map(this::convertToDTO)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
+                .orElseThrow(
+                        () ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND, "Contact not found"));
     }
 
     @Transactional
     public BusinessContactDTO createContact(UUID businessId, CreateBusinessContactDTO createDTO) {
-        Business business = businessRepository.findById(businessId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Business not found"));
+        Business business =
+                businessRepository
+                        .findById(businessId)
+                        .orElseThrow(
+                                () ->
+                                        new ResponseStatusException(
+                                                HttpStatus.NOT_FOUND, "Business not found"));
 
         BusinessContact contact = new BusinessContact();
         contact.setBusiness(business);
@@ -125,15 +158,18 @@ public class BusinessContactService {
         BusinessContact savedContact = contactRepository.save(contact);
 
         if (createDTO.getProperties() != null) {
-            List<BusinessContactProperty> properties = createDTO.getProperties().entrySet().stream()
-                    .map(entry -> {
-                        BusinessContactProperty property = new BusinessContactProperty();
-                        property.setContact(savedContact);
-                        property.setKey(entry.getKey());
-                        property.setValue(entry.getValue());
-                        return property;
-                    })
-                    .collect(Collectors.toList());
+            List<BusinessContactProperty> properties =
+                    createDTO.getProperties().entrySet().stream()
+                            .map(
+                                    entry -> {
+                                        BusinessContactProperty property =
+                                                new BusinessContactProperty();
+                                        property.setContact(savedContact);
+                                        property.setKey(entry.getKey());
+                                        property.setValue(entry.getValue());
+                                        return property;
+                                    })
+                            .collect(Collectors.toList());
             propertyRepository.saveAll(properties);
             savedContact.setProperties(properties);
         }
@@ -143,8 +179,13 @@ public class BusinessContactService {
 
     @Transactional
     public BusinessContactDTO updateContact(Long id, CreateBusinessContactDTO updateDTO) {
-        BusinessContact contact = contactRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
+        BusinessContact contact =
+                contactRepository
+                        .findById(id)
+                        .orElseThrow(
+                                () ->
+                                        new ResponseStatusException(
+                                                HttpStatus.NOT_FOUND, "Contact not found"));
 
         contact.setType(updateDTO.getType());
         contact.setValue(updateDTO.getValue());
@@ -153,14 +194,17 @@ public class BusinessContactService {
 
         if (updateDTO.getProperties() != null) {
             contact.getProperties().clear();
-            
-            updateDTO.getProperties().forEach((key, value) -> {
-                BusinessContactProperty property = new BusinessContactProperty();
-                property.setContact(contact);
-                property.setKey(key);
-                property.setValue(value);
-                contact.getProperties().add(property);
-            });
+
+            updateDTO
+                    .getProperties()
+                    .forEach(
+                            (key, value) -> {
+                                BusinessContactProperty property = new BusinessContactProperty();
+                                property.setContact(contact);
+                                property.setKey(key);
+                                property.setValue(value);
+                                contact.getProperties().add(property);
+                            });
         }
 
         BusinessContact savedContact = contactRepository.save(contact);
@@ -183,13 +227,17 @@ public class BusinessContactService {
         dto.setValue(contact.getValue());
         dto.setLabel(contact.getLabel());
         dto.setPrimary(contact.isPrimary());
-        
+
         if (contact.getProperties() != null) {
-            Map<ContactPropertyKey, String> properties = contact.getProperties().stream()
-                    .collect(Collectors.toMap(BusinessContactProperty::getKey, BusinessContactProperty::getValue));
+            Map<ContactPropertyKey, String> properties =
+                    contact.getProperties().stream()
+                            .collect(
+                                    Collectors.toMap(
+                                            BusinessContactProperty::getKey,
+                                            BusinessContactProperty::getValue));
             dto.setProperties(properties);
         }
-        
+
         return dto;
     }
 }

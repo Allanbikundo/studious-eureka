@@ -7,11 +7,9 @@ import lombok.Data;
 
 @Data
 public class CreateInstanceAndContactDTO {
-    @NotNull
-    private ContactType type;
+    @NotNull private ContactType type;
 
-    @NotBlank
-    private String value; // Phone number, email, or URL
+    @NotBlank private String value; // Phone number, email, or URL
 
     private String label;
     private boolean isPrimary;

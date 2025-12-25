@@ -1,14 +1,13 @@
 package com.scalum.starter.model;
 
 import jakarta.persistence.*;
-import java.util.UUID;
 import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "business_setting", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"business_id", "setting_id"})
-})
+@Table(
+        name = "business_setting",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"business_id", "setting_id"})})
 public class BusinessSetting {
 
     @Id

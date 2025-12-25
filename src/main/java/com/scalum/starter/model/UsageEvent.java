@@ -7,9 +7,13 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "usage_event", indexes = {
-    @Index(name = "idx_usage_event_business_timestamp", columnList = "businessId, timestamp")
-})
+@Table(
+        name = "usage_event",
+        indexes = {
+            @Index(
+                    name = "idx_usage_event_business_timestamp",
+                    columnList = "businessId, timestamp")
+        })
 public class UsageEvent {
 
     @Id

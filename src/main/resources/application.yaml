@@ -38,6 +38,12 @@ keycloak:
   client-id: aggregator-backend
   client-secret: RzBmZ82b3iWWBiUC9V2QQYHjUiD3mxdo
 
+weaviate:
+  host: jzl75dq5g5cjzvahmuzq.c0.europe-west3.gcp.weaviate.cloud
+  scheme: http
+  http-port: 80
+  gprc: grpc-jzl75dq5g5cjzvahmuzq.c0.europe-west3.gcp.weaviate.cloud
+  api-key: SHFyQXVMcDVXMlJFVGIvd194Y2FTVG5kZHMyYmg3dFZ5YTVSUW0yaVgrdTYxMlMxMlJFdmd6dE5Dclg0PV92MjAw
 logging:
   level:
     root: INFO

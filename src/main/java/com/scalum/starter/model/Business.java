@@ -10,9 +10,9 @@ import org.hibernate.type.SqlTypes;
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = false)
-@Table(name = "business", indexes = {
-    @Index(name = "idx_business_tree_path", columnList = "treePath")
-})
+@Table(
+        name = "business",
+        indexes = {@Index(name = "idx_business_tree_path", columnList = "treePath")})
 public class Business extends Auditable {
 
     @Id
@@ -31,8 +31,11 @@ public class Business extends Auditable {
     private UUID createdByUserId;
 
     @Column(columnDefinition = "ltree")
-    @JdbcTypeCode(SqlTypes.VARCHAR) // Treat as VARCHAR on Java side, but cast to ltree on DB side? No, this just maps to VARCHAR.
-    // To handle ltree properly with Hibernate 6, we usually need a custom type or rely on implicit casting if the driver supports it.
+    @JdbcTypeCode(
+            SqlTypes.VARCHAR) // Treat as VARCHAR on Java side, but cast to ltree on DB side? No,
+    // this just maps to VARCHAR.
+    // To handle ltree properly with Hibernate 6, we usually need a custom type or rely on implicit
+    // casting if the driver supports it.
     // However, the error says "expression is of type character varying".
     // We need to tell Hibernate to cast it.
     // Or we can use @ColumnTransformer.

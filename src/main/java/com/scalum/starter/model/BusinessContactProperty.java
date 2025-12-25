@@ -7,9 +7,9 @@ import lombok.ToString;
 
 @Entity
 @Data
-@Table(name = "business_contact_property", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"contact_id", "property_key"})
-})
+@Table(
+        name = "business_contact_property",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"contact_id", "property_key"})})
 @EqualsAndHashCode(exclude = "contact")
 @ToString(exclude = "contact")
 public class BusinessContactProperty {

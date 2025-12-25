@@ -37,15 +37,15 @@ public class BusinessContactController {
 
     @GetMapping("/businesses/{businessId}/contacts")
     @Operation(summary = "List contacts for a business")
-    public ResponseEntity<List<BusinessContactDTO>> getContactsByBusiness(@PathVariable UUID businessId) {
+    public ResponseEntity<List<BusinessContactDTO>> getContactsByBusiness(
+            @PathVariable UUID businessId) {
         return ResponseEntity.ok(contactService.getContactsByBusinessId(businessId));
     }
 
     @PostMapping("/businesses/{businessId}/contacts")
     @Operation(summary = "Create a contact for a business (without Evolution API instance)")
     public ResponseEntity<BusinessContactDTO> createContact(
-            @PathVariable UUID businessId,
-            @Valid @RequestBody CreateBusinessContactDTO createDTO) {
+            @PathVariable UUID businessId, @Valid @RequestBody CreateBusinessContactDTO createDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(contactService.createContact(businessId, createDTO));
     }
@@ -59,8 +59,7 @@ public class BusinessContactController {
     @PutMapping("/contacts/{contactId}")
     @Operation(summary = "Update a contact")
     public ResponseEntity<BusinessContactDTO> updateContact(
-            @PathVariable Long contactId,
-            @Valid @RequestBody CreateBusinessContactDTO updateDTO) {
+            @PathVariable Long contactId, @Valid @RequestBody CreateBusinessContactDTO updateDTO) {
         return ResponseEntity.ok(contactService.updateContact(contactId, updateDTO));
     }
 

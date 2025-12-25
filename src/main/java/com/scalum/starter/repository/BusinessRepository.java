@@ -13,7 +13,9 @@ public interface BusinessRepository extends JpaRepository<Business, UUID> {
 
     List<Business> findByParentId(UUID parentId);
 
-    @Query(value = "SELECT * FROM business WHERE tree_path <@ CAST(:treePath AS ltree)", nativeQuery = true)
+    @Query(
+            value = "SELECT * FROM business WHERE tree_path <@ CAST(:treePath AS ltree)",
+            nativeQuery = true)
     List<Business> findSubtree(String treePath);
 
     Optional<Business> findByBusinessName(String businessName);

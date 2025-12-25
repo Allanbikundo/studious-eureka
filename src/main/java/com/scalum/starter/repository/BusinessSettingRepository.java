@@ -10,5 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BusinessSettingRepository extends JpaRepository<BusinessSetting, Long> {
     List<BusinessSetting> findByBusinessId(UUID businessId);
+
     Optional<BusinessSetting> findByBusinessIdAndSettingKey(UUID businessId, String key);
 }

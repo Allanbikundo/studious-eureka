@@ -33,7 +33,7 @@ services:
       - "5434:5432"
 
   evolution-api:
-    image: atendai/evolution-api:latest
+    image: evoapicloud/evolution-api:v2.3.7
     restart: always
     env_file:
       - evolution.env

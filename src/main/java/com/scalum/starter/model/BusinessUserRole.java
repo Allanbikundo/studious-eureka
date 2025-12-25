@@ -5,9 +5,9 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "business_user_role", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"user_id", "business_id"})
-})
+@Table(
+        name = "business_user_role",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "business_id"})})
 public class BusinessUserRole {
 
     @Id

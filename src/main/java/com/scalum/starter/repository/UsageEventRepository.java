@@ -10,5 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UsageEventRepository extends JpaRepository<UsageEvent, Long> {
 
-    List<UsageEvent> findByBusinessIdAndTimestampBetween(UUID businessId, LocalDateTime start, LocalDateTime end);
+    List<UsageEvent> findByBusinessIdAndTimestampBetween(
+            UUID businessId, LocalDateTime start, LocalDateTime end);
 }

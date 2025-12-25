@@ -8,10 +8,9 @@ import lombok.Data;
 public class BusinessDTO {
     private UUID id;
     private UUID parentId;
-    
-    @NotBlank
-    private String businessName;
-    
+
+    @NotBlank private String businessName;
+
     private String taxId;
     private UUID createdByUserId;
     private String treePath;

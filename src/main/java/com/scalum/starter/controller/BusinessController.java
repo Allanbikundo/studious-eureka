@@ -40,7 +40,8 @@ public class BusinessController {
     @GetMapping("/{id}")
     @Operation(summary = "Get business by ID")
     public ResponseEntity<BusinessDTO> getBusinessById(@PathVariable UUID id) {
-        return businessRepository.findById(id)
+        return businessRepository
+                .findById(id)
                 .map(this::convertToDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -49,19 +50,20 @@ public class BusinessController {
     @PostMapping
     @Transactional
     @Operation(summary = "Create a new business")
-    public ResponseEntity<BusinessDTO> createBusiness(@Valid @RequestBody CreateBusinessDTO createDTO, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<BusinessDTO> createBusiness(
+            @Valid @RequestBody CreateBusinessDTO createDTO, @AuthenticationPrincipal Jwt jwt) {
         // In a real app, we would extract user ID from JWT and validate permissions
         // UUID userId = UUID.fromString(jwt.getClaimAsString("sub"));
-        // For now, we'll assume a placeholder or extract if possible. 
+        // For now, we'll assume a placeholder or extract if possible.
         // Since the User entity uses UUID, we need a valid UUID.
         // Let's assume the JWT 'sub' is the UUID.
-        
+
         UUID userId;
         try {
             userId = UUID.fromString(jwt.getSubject());
         } catch (IllegalArgumentException e) {
-             // Fallback or error if subject is not UUID (e.g. keycloak ID might be UUID)
-             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid User ID in token");
+            // Fallback or error if subject is not UUID (e.g. keycloak ID might be UUID)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid User ID in token");
         }
 
         Business business = new Business();
@@ -69,34 +71,43 @@ public class BusinessController {
         business.setTaxId(createDTO.getTaxId());
         business.setParentId(createDTO.getParentId());
         business.setCreatedByUserId(userId);
-        
+
         // Logic for treePath would go here or in a service
         // For root business:
         if (createDTO.getParentId() == null) {
-             // It's a root
-             // We need to save first to get ID, then update treePath? 
-             // Or generate ID manually.
-             // JPA @GeneratedValue(strategy = GenerationType.UUID) generates it before persist usually.
-             // But we might need to flush.
+            // It's a root
+            // We need to save first to get ID, then update treePath?
+            // Or generate ID manually.
+            // JPA @GeneratedValue(strategy = GenerationType.UUID) generates it before persist
+            // usually.
+            // But we might need to flush.
         } else {
-             Business parent = businessRepository.findById(createDTO.getParentId())
-                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent business not found"));
-             // business.setTreePath(parent.getTreePath() + "." + business.getId()); // Logic needs ID
+            Business parent =
+                    businessRepository
+                            .findById(createDTO.getParentId())
+                            .orElseThrow(
+                                    () ->
+                                            new ResponseStatusException(
+                                                    HttpStatus.NOT_FOUND,
+                                                    "Parent business not found"));
+            // business.setTreePath(parent.getTreePath() + "." + business.getId()); // Logic needs
+            // ID
         }
 
         // Since we are in a controller, we should probably delegate complex logic to a Service.
         // But for this task, I'll do a simple save.
         // Note: treePath logic is missing here as it requires ID which is generated on save.
-        
+
         Business savedBusiness = businessRepository.save(business);
-        
+
         // Update treePath after save if needed
         if (savedBusiness.getTreePath() == null) {
             if (savedBusiness.getParentId() == null) {
                 savedBusiness.setTreePath(savedBusiness.getId().toString());
             } else {
-                 Business parent = businessRepository.findById(savedBusiness.getParentId()).orElseThrow();
-                 savedBusiness.setTreePath(parent.getTreePath() + "." + savedBusiness.getId());
+                Business parent =
+                        businessRepository.findById(savedBusiness.getParentId()).orElseThrow();
+                savedBusiness.setTreePath(parent.getTreePath() + "." + savedBusiness.getId());
             }
             savedBusiness = businessRepository.save(savedBusiness);
         }
@@ -107,14 +118,17 @@ public class BusinessController {
     @PutMapping("/{id}")
     @Transactional
     @Operation(summary = "Update a business")
-    public ResponseEntity<BusinessDTO> updateBusiness(@PathVariable UUID id, @Valid @RequestBody CreateBusinessDTO updateDTO) {
-        return businessRepository.findById(id)
-                .map(business -> {
-                    business.setBusinessName(updateDTO.getBusinessName());
-                    business.setTaxId(updateDTO.getTaxId());
-                    // Changing parent is complex (tree move), skipping for simple CRUD
-                    return businessRepository.save(business);
-                })
+    public ResponseEntity<BusinessDTO> updateBusiness(
+            @PathVariable UUID id, @Valid @RequestBody CreateBusinessDTO updateDTO) {
+        return businessRepository
+                .findById(id)
+                .map(
+                        business -> {
+                            business.setBusinessName(updateDTO.getBusinessName());
+                            business.setTaxId(updateDTO.getTaxId());
+                            // Changing parent is complex (tree move), skipping for simple CRUD
+                            return businessRepository.save(business);
+                        })
                 .map(this::convertToDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

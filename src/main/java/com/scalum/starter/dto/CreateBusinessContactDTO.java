@@ -9,14 +9,12 @@ import lombok.Data;
 
 @Data
 public class CreateBusinessContactDTO {
-    @NotNull
-    private ContactType type;
-    
-    @NotBlank
-    private String value;
-    
+    @NotNull private ContactType type;
+
+    @NotBlank private String value;
+
     private String label;
     private boolean isPrimary;
-    
+
     private Map<ContactPropertyKey, String> properties;
 }

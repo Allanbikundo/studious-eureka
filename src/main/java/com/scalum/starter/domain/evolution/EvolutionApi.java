@@ -15,20 +15,15 @@ public interface EvolutionApi {
 
     @POST("message/sendText/{instance}")
     Call<Object> sendText(
-        @Path("instance") String instance,
-        @Header("apikey") String apiKey,
-        @Body EvolutionTextRequest request
-    );
+            @Path("instance") String instance,
+            @Header("apikey") String apiKey,
+            @Body EvolutionTextRequest request);
 
     @POST("instance/create")
     Call<CreateInstanceResponse> createInstance(
-        @Header("apikey") String apiKey,
-        @Body CreateInstanceRequest request
-    );
+            @Header("apikey") String apiKey, @Body CreateInstanceRequest request);
 
     @GET("instance/connect/{instance}")
     Call<ConnectInstanceResponse> connectInstance(
-        @Path("instance") String instance,
-        @Header("apikey") String apiKey
-    );
+            @Path("instance") String instance, @Header("apikey") String apiKey);
 }
