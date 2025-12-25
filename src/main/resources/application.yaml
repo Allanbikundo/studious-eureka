@@ -8,6 +8,9 @@ spring:
     username: scalum
     password: password
     driver-class-name: org.postgresql.Driver
+  mail:
+    host: localhost
+    port: 1025
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -51,12 +54,3 @@ logging:
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-
----
-spring:
-  config:
-    activate:
-      on-profile: local
-  mail:
-    host: localhost
-    port: 1025

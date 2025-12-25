@@ -31,15 +31,8 @@ public class Business extends Auditable {
     private UUID createdByUserId;
 
     @Column(columnDefinition = "ltree")
-    @JdbcTypeCode(
-            SqlTypes.VARCHAR) // Treat as VARCHAR on Java side, but cast to ltree on DB side? No,
-    // this just maps to VARCHAR.
-    // To handle ltree properly with Hibernate 6, we usually need a custom type or rely on implicit
-    // casting if the driver supports it.
-    // However, the error says "expression is of type character varying".
-    // We need to tell Hibernate to cast it.
-    // Or we can use @ColumnTransformer.
     @org.hibernate.annotations.ColumnTransformer(write = "?::ltree")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private String treePath;
 
     @JdbcTypeCode(SqlTypes.JSON)
@@ -48,6 +41,17 @@ public class Business extends Auditable {
 
     @Column(nullable = false)
     private boolean isActive = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "industry_id")
+    private BusinessIndustry industry;
+
+    @Enumerated(EnumType.STRING)
+    private BusinessSize businessSize;
+
+    private String website;
+
+    private String location;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id", insertable = false, updatable = false)
