@@ -36,7 +36,8 @@ public class SecurityConfig {
                                                 "/public/**",
                                                 "/swagger-ui/**",
                                                 "/v3/api-docs/**",
-                                                "/actuator/**")
+                                                "/actuator/**",
+                                                "/webhook/**") // Allow webhook endpoints
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated())

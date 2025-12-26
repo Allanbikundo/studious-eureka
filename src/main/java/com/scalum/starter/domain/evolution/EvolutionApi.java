@@ -4,6 +4,8 @@ import com.scalum.starter.domain.evolution.dto.ConnectInstanceResponse;
 import com.scalum.starter.domain.evolution.dto.CreateInstanceRequest;
 import com.scalum.starter.domain.evolution.dto.CreateInstanceResponse;
 import com.scalum.starter.domain.evolution.dto.EvolutionTextRequest;
+import com.scalum.starter.domain.evolution.dto.SendTextRequest;
+import com.scalum.starter.domain.evolution.dto.SetWebhookRequest;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -19,6 +21,12 @@ public interface EvolutionApi {
             @Header("apikey") String apiKey,
             @Body EvolutionTextRequest request);
 
+    @POST("message/sendText/{instance}")
+    Call<Object> sendSimpleText(
+            @Path("instance") String instance,
+            @Header("apikey") String apiKey,
+            @Body SendTextRequest request);
+
     @POST("instance/create")
     Call<CreateInstanceResponse> createInstance(
             @Header("apikey") String apiKey, @Body CreateInstanceRequest request);
@@ -26,4 +34,10 @@ public interface EvolutionApi {
     @GET("instance/connect/{instance}")
     Call<ConnectInstanceResponse> connectInstance(
             @Path("instance") String instance, @Header("apikey") String apiKey);
+
+    @POST("webhook/set/{instance}")
+    Call<Object> setWebhook(
+            @Path("instance") String instance,
+            @Header("apikey") String apiKey,
+            @Body SetWebhookRequest request);
 }

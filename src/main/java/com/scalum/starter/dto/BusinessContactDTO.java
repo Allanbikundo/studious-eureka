@@ -12,13 +12,11 @@ import lombok.Data;
 public class BusinessContactDTO {
     private Long id;
     private UUID businessId;
-    
-    @NotNull
-    private ContactType type;
-    
-    @NotBlank
-    private String value;
-    
+
+    @NotNull private ContactType type;
+
+    @NotBlank private String value;
+
     private String label;
     private boolean isPrimary;
     private boolean isConnected;

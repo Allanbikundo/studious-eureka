@@ -1,6 +1,7 @@
 package com.scalum.starter.domain.business;
 
 import com.scalum.starter.domain.evolution.EvolutionApiClient;
+import com.scalum.starter.domain.evolution.EvolutionWebhookEvent;
 import com.scalum.starter.domain.evolution.dto.ConnectInstanceResponse;
 import com.scalum.starter.domain.evolution.dto.CreateInstanceResponse;
 import com.scalum.starter.dto.*;
@@ -18,6 +19,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,9 @@ public class BusinessContactService {
     private final BusinessContactPropertyRepository propertyRepository;
     private final BusinessRepository businessRepository;
     private final EvolutionApiClient evolutionApiClient;
+
+    @Value("${app.webhook-url}")
+    private String appWebhookUrl;
 
     @Transactional
     public BusinessContactWithInstanceDTO createContactAndInstance(
@@ -49,6 +54,16 @@ public class BusinessContactService {
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     "Failed to retrieve instance details from Evolution API after creation.");
+        }
+
+        // Set default webhook
+        if (appWebhookUrl != null && !appWebhookUrl.isBlank()) {
+            evolutionApiClient.setWebhook(
+                    instanceName,
+                    appWebhookUrl,
+                    List.of(
+                            EvolutionWebhookEvent.MESSAGES_UPSERT,
+                            EvolutionWebhookEvent.CONNECTION_UPDATE));
         }
 
         Map<ContactPropertyKey, String> properties = new HashMap<>();
@@ -115,6 +130,31 @@ public class BusinessContactService {
         resultDTO.setInstanceName(instanceName);
 
         return resultDTO;
+    }
+
+    @Transactional
+    public void setWebhookForContact(Long contactId, SetWebhookDTO webhookDTO) {
+        BusinessContact contact =
+                contactRepository
+                        .findById(contactId)
+                        .orElseThrow(
+                                () ->
+                                        new ResponseStatusException(
+                                                HttpStatus.NOT_FOUND, "Contact not found"));
+
+        String instanceName =
+                contact.getProperties().stream()
+                        .filter(p -> p.getKey() == ContactPropertyKey.INSTANCE_ID)
+                        .findFirst()
+                        .map(BusinessContactProperty::getValue)
+                        .orElseThrow(
+                                () ->
+                                        new ResponseStatusException(
+                                                HttpStatus.BAD_REQUEST,
+                                                "Instance ID not configured for this contact"));
+
+        evolutionApiClient.setWebhook(
+                instanceName, webhookDTO.getWebhookUrl(), webhookDTO.getEvents());
     }
 
     @Transactional(readOnly = true)

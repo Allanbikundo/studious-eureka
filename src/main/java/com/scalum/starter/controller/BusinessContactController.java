@@ -35,6 +35,14 @@ public class BusinessContactController {
         return ResponseEntity.ok(contactService.connectContactInstance(contactId));
     }
 
+    @PostMapping("/contacts/{contactId}/webhook")
+    @Operation(summary = "Set webhook for a contact's instance")
+    public ResponseEntity<Void> setWebhook(
+            @PathVariable Long contactId, @Valid @RequestBody SetWebhookDTO webhookDTO) {
+        contactService.setWebhookForContact(contactId, webhookDTO);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/businesses/{businessId}/contacts")
     @Operation(summary = "List contacts for a business")
     public ResponseEntity<List<BusinessContactDTO>> getContactsByBusiness(

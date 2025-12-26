@@ -5,6 +5,7 @@ import com.scalum.starter.model.BusinessContact;
 import com.scalum.starter.model.BusinessContactProperty;
 import com.scalum.starter.model.ContactPropertyKey;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,34 +25,12 @@ public class EvolutionApiClient {
     @Value("${evolution.api-key}")
     private String globalApiKey;
 
-    public void sendMessage(BusinessContact contact, String number, String text) {
-        Map<ContactPropertyKey, String> properties = getPropertiesMap(contact);
-
-        String instanceId = properties.get(ContactPropertyKey.INSTANCE_ID);
-        String token = properties.get(ContactPropertyKey.API_TOKEN);
-
-        String apiKeyToUse = token != null ? token : globalApiKey;
-
-        if (instanceId == null) {
-            log.error("Missing instance ID for contact ID: {}", contact.getId());
-            throw new IllegalArgumentException("Missing Evolution API instance ID");
-        }
-
-        EvolutionTextRequest request =
-                EvolutionTextRequest.builder()
-                        .number(number)
-                        .options(
-                                EvolutionOptions.builder()
-                                        .delay(1200)
-                                        .presence("composing")
-                                        .linkPreview(false)
-                                        .build())
-                        .textMessage(EvolutionTextMessage.builder().text(text).build())
-                        .build();
+    public void sendMessage(String number, String text, String instanceId) {
+        SendTextRequest request = SendTextRequest.builder().number(number).text(text).build();
 
         try {
             Response<Object> response =
-                    evolutionApi.sendText(instanceId, apiKeyToUse, request).execute();
+                    evolutionApi.sendSimpleText(instanceId, globalApiKey, request).execute();
             if (!response.isSuccessful()) {
                 String errorBody =
                         response.errorBody() != null ? response.errorBody().string() : "null";
@@ -127,6 +106,39 @@ public class EvolutionApiClient {
         } catch (IOException e) {
             log.error("Error connecting instance '{}' via Evolution API", instanceName, e);
             throw new RuntimeException("Failed to connect instance", e);
+        }
+    }
+
+    public void setWebhook(
+            String instanceName, String webhookUrl, List<EvolutionWebhookEvent> events) {
+        SetWebhookRequest.Webhook webhook =
+                SetWebhookRequest.Webhook.builder()
+                        .enabled(true)
+                        .url(webhookUrl)
+                        .events(events)
+                        .base64(false)
+                        .byEvents(false)
+                        .build();
+
+        SetWebhookRequest request = SetWebhookRequest.builder().webhook(webhook).build();
+
+        try {
+            Response<Object> response =
+                    evolutionApi.setWebhook(instanceName, globalApiKey, request).execute();
+            if (!response.isSuccessful()) {
+                String errorBody =
+                        response.errorBody() != null ? response.errorBody().string() : "null";
+                log.error(
+                        "Failed to set webhook for instance '{}'. Code: {}, Body: {}",
+                        instanceName,
+                        response.code(),
+                        errorBody);
+                throw new RuntimeException("Evolution API set webhook failed: " + response.code());
+            }
+            log.info("Webhook set successfully for instance '{}'", instanceName);
+        } catch (IOException e) {
+            log.error("Error setting webhook for instance '{}' via Evolution API", instanceName, e);
+            throw new RuntimeException("Failed to set webhook", e);
         }
     }
 
