@@ -6,13 +6,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/industries")
+@RequestMapping("/v1/industries")
 @RequiredArgsConstructor
 @Tag(name = "Business Industry Management", description = "APIs for managing business industries")
 public class BusinessIndustryController {
@@ -34,7 +35,7 @@ public class BusinessIndustryController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a business industry")
-    public ResponseEntity<Void> deleteIndustry(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteIndustry(@PathVariable UUID id) {
         if (industryRepository.existsById(id)) {
             industryRepository.deleteById(id);
             return ResponseEntity.noContent().build();

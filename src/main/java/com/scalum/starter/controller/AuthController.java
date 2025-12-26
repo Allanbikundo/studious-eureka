@@ -3,6 +3,7 @@ package com.scalum.starter.controller;
 import com.scalum.starter.domain.auth.AuthenticationService;
 import com.scalum.starter.dto.ForgotPasswordRequest;
 import com.scalum.starter.dto.LoginRequest;
+import com.scalum.starter.dto.RefreshTokenRequest;
 import com.scalum.starter.dto.ResetPasswordRequest;
 import com.scalum.starter.dto.SignUpRequest;
 import jakarta.validation.Valid;
@@ -26,6 +27,12 @@ public class AuthController {
     @PostMapping("login")
     public AccessTokenResponse login(@RequestBody @Valid LoginRequest loginRequest) {
         return authenticationService.login(loginRequest);
+    }
+
+    @PostMapping("refresh-token")
+    public AccessTokenResponse refreshToken(
+            @RequestBody @Valid RefreshTokenRequest refreshTokenRequest) {
+        return authenticationService.refreshToken(refreshTokenRequest.getRefreshToken());
     }
 
     @PostMapping("forgot-password")

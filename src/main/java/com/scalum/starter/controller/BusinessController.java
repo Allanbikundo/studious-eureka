@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/api/v1/businesses")
+@RequestMapping("/v1/businesses")
 @RequiredArgsConstructor
 @Tag(name = "Business Management", description = "APIs for managing businesses")
 public class BusinessController {
@@ -36,6 +36,20 @@ public class BusinessController {
     @Operation(summary = "List all businesses")
     public List<BusinessDTO> getAllBusinesses() {
         return businessRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/me")
+    @Operation(summary = "List businesses created by the logged-in user")
+    public List<BusinessDTO> getMyBusinesses(@AuthenticationPrincipal Jwt jwt) {
+        UUID userId;
+        try {
+            userId = UUID.fromString(jwt.getSubject());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid User ID in token");
+        }
+        return businessRepository.findByCreatedByUserId(userId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -55,7 +69,7 @@ public class BusinessController {
     @Operation(summary = "Create a new business")
     public ResponseEntity<BusinessDTO> createBusiness(
             @Valid @RequestBody CreateBusinessDTO createDTO, @AuthenticationPrincipal Jwt jwt) {
-        
+
         UUID userId;
         try {
             userId = UUID.fromString(jwt.getSubject());
@@ -73,14 +87,20 @@ public class BusinessController {
         business.setLocation(createDTO.getLocation());
 
         if (createDTO.getIndustryId() != null) {
-            BusinessIndustry industry = businessIndustryRepository.findById(createDTO.getIndustryId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Industry ID"));
+            BusinessIndustry industry =
+                    businessIndustryRepository
+                            .findById(createDTO.getIndustryId())
+                            .orElseThrow(
+                                    () ->
+                                            new ResponseStatusException(
+                                                    HttpStatus.BAD_REQUEST, "Invalid Industry ID"));
             business.setIndustry(industry);
         }
 
         if (createDTO.getParentId() != null) {
             if (!businessRepository.existsById(createDTO.getParentId())) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent business not found");
+                throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Parent business not found");
             }
         }
 
@@ -115,15 +135,21 @@ public class BusinessController {
                             business.setBusinessSize(updateDTO.getBusinessSize());
                             business.setWebsite(updateDTO.getWebsite());
                             business.setLocation(updateDTO.getLocation());
-                            
+
                             if (updateDTO.getIndustryId() != null) {
-                                BusinessIndustry industry = businessIndustryRepository.findById(updateDTO.getIndustryId())
-                                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Industry ID"));
+                                BusinessIndustry industry =
+                                        businessIndustryRepository
+                                                .findById(updateDTO.getIndustryId())
+                                                .orElseThrow(
+                                                        () ->
+                                                                new ResponseStatusException(
+                                                                        HttpStatus.BAD_REQUEST,
+                                                                        "Invalid Industry ID"));
                                 business.setIndustry(industry);
                             } else {
                                 business.setIndustry(null);
                             }
-                            
+
                             return businessRepository.save(business);
                         })
                 .map(this::convertToDTO)
@@ -151,8 +177,14 @@ public class BusinessController {
         dto.setTreePath(business.getTreePath());
         dto.setSettingsSnapshot(business.getSettingsSnapshot());
         dto.setActive(business.isActive());
-        // Add new fields to DTO if needed, but BusinessDTO wasn't requested to be updated.
-        // Assuming we should update BusinessDTO as well to reflect the changes in response.
+        dto.setBusinessSize(business.getBusinessSize());
+        dto.setWebsite(business.getWebsite());
+        dto.setLocation(business.getLocation());
+
+        if (business.getIndustry() != null) {
+            dto.setIndustryId(business.getIndustry().getId());
+        }
+
         return dto;
     }
 }

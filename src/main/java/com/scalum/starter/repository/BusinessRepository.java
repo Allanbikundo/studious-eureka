@@ -19,4 +19,6 @@ public interface BusinessRepository extends JpaRepository<Business, UUID> {
     List<Business> findSubtree(String treePath);
 
     Optional<Business> findByBusinessName(String businessName);
+
+    List<Business> findByCreatedByUserId(UUID createdByUserId);
 }

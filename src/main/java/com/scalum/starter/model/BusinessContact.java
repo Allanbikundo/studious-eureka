@@ -33,6 +33,12 @@ public class BusinessContact extends Auditable {
 
     private boolean isPrimary;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean isConnected = false;
+
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean isActive = true;
+
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BusinessContactProperty> properties = new ArrayList<>();
 }

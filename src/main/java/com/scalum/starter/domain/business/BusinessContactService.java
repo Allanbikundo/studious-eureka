@@ -154,6 +154,8 @@ public class BusinessContactService {
         contact.setValue(createDTO.getValue());
         contact.setLabel(createDTO.getLabel());
         contact.setPrimary(createDTO.isPrimary());
+        contact.setConnected(false); // Default to false
+        contact.setActive(true); // Default to true
 
         BusinessContact savedContact = contactRepository.save(contact);
 
@@ -227,6 +229,8 @@ public class BusinessContactService {
         dto.setValue(contact.getValue());
         dto.setLabel(contact.getLabel());
         dto.setPrimary(contact.isPrimary());
+        dto.setConnected(contact.isConnected());
+        dto.setActive(contact.isActive());
 
         if (contact.getProperties() != null) {
             Map<ContactPropertyKey, String> properties =
