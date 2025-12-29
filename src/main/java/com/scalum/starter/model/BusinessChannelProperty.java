@@ -8,23 +8,23 @@ import lombok.ToString;
 @Entity
 @Data
 @Table(
-        name = "business_contact_property",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"contact_id", "property_key"})})
-@EqualsAndHashCode(exclude = "contact")
-@ToString(exclude = "contact")
-public class BusinessContactProperty {
+        name = "business_channel_property",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"channel_id", "property_key"})})
+@EqualsAndHashCode(exclude = "channel")
+@ToString(exclude = "channel")
+public class BusinessChannelProperty {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "contact_id", nullable = false)
-    private BusinessContact contact;
+    @JoinColumn(name = "channel_id", nullable = false)
+    private BusinessChannel channel;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "property_key", nullable = false)
-    private ContactPropertyKey key;
+    private ChannelPropertyKey key;
 
     @Column(nullable = false)
     private String value;

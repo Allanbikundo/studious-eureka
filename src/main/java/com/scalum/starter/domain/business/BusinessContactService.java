@@ -6,11 +6,11 @@ import com.scalum.starter.domain.evolution.dto.ConnectInstanceResponse;
 import com.scalum.starter.domain.evolution.dto.CreateInstanceResponse;
 import com.scalum.starter.dto.*;
 import com.scalum.starter.model.Business;
-import com.scalum.starter.model.BusinessContact;
-import com.scalum.starter.model.BusinessContactProperty;
-import com.scalum.starter.model.ContactPropertyKey;
-import com.scalum.starter.repository.BusinessContactPropertyRepository;
-import com.scalum.starter.repository.BusinessContactRepository;
+import com.scalum.starter.model.BusinessChannel;
+import com.scalum.starter.model.BusinessChannelProperty;
+import com.scalum.starter.model.ChannelPropertyKey;
+import com.scalum.starter.repository.BusinessChannelPropertyRepository;
+import com.scalum.starter.repository.BusinessChannelRepository;
 import com.scalum.starter.repository.BusinessRepository;
 import java.util.HashMap;
 import java.util.List;
@@ -29,8 +29,8 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class BusinessContactService {
 
-    private final BusinessContactRepository contactRepository;
-    private final BusinessContactPropertyRepository propertyRepository;
+    private final BusinessChannelRepository channelRepository;
+    private final BusinessChannelPropertyRepository propertyRepository;
     private final BusinessRepository businessRepository;
     private final EvolutionApiClient evolutionApiClient;
 
@@ -38,7 +38,7 @@ public class BusinessContactService {
     private String appWebhookUrl;
 
     @Transactional
-    public BusinessContactWithInstanceDTO createContactAndInstance(
+    public BusinessChannelWithInstanceDTO createContactAndInstance(
             UUID businessId, CreateInstanceAndContactDTO createDTO) {
         String instanceName =
                 "biz_"
@@ -66,21 +66,21 @@ public class BusinessContactService {
                             EvolutionWebhookEvent.CONNECTION_UPDATE));
         }
 
-        Map<ContactPropertyKey, String> properties = new HashMap<>();
+        Map<ChannelPropertyKey, String> properties = new HashMap<>();
         properties.put(
-                ContactPropertyKey.INSTANCE_ID, instanceResponse.getInstance().getInstanceName());
-        properties.put(ContactPropertyKey.API_TOKEN, instanceResponse.getHash());
+                ChannelPropertyKey.INSTANCE_ID, instanceResponse.getInstance().getInstanceName());
+        properties.put(ChannelPropertyKey.API_TOKEN, instanceResponse.getHash());
 
-        CreateBusinessContactDTO contactDTO = new CreateBusinessContactDTO();
+        CreateBusinessChannelDTO contactDTO = new CreateBusinessChannelDTO();
         contactDTO.setType(createDTO.getType());
         contactDTO.setValue(createDTO.getValue());
         contactDTO.setLabel(createDTO.getLabel());
         contactDTO.setPrimary(createDTO.isPrimary());
         contactDTO.setProperties(properties);
 
-        BusinessContactDTO createdContact = createContact(businessId, contactDTO);
+        BusinessChannelDTO createdContact = createContact(businessId, contactDTO);
 
-        BusinessContactWithInstanceDTO resultDTO = new BusinessContactWithInstanceDTO();
+        BusinessChannelWithInstanceDTO resultDTO = new BusinessChannelWithInstanceDTO();
         BeanUtils.copyProperties(createdContact, resultDTO);
         resultDTO.setInstanceName(instanceResponse.getInstance().getInstanceName());
         resultDTO.setInstanceStatus(instanceResponse.getInstance().getStatus());
@@ -90,8 +90,8 @@ public class BusinessContactService {
 
     @Transactional(readOnly = true)
     public BusinessContactWithQrDTO connectContactInstance(Long contactId) {
-        BusinessContact contact =
-                contactRepository
+        BusinessChannel contact =
+                channelRepository
                         .findById(contactId)
                         .orElseThrow(
                                 () ->
@@ -100,9 +100,9 @@ public class BusinessContactService {
 
         String instanceName =
                 contact.getProperties().stream()
-                        .filter(p -> p.getKey() == ContactPropertyKey.INSTANCE_ID)
+                        .filter(p -> p.getKey() == ChannelPropertyKey.INSTANCE_ID)
                         .findFirst()
-                        .map(BusinessContactProperty::getValue)
+                        .map(BusinessChannelProperty::getValue)
                         .orElseThrow(
                                 () ->
                                         new ResponseStatusException(
@@ -118,7 +118,7 @@ public class BusinessContactService {
                                                 HttpStatus.NOT_FOUND,
                                                 "Instance not found in Evolution API"));
 
-        BusinessContactDTO contactDTO = convertToDTO(contact);
+        BusinessChannelDTO contactDTO = convertToDTO(contact);
         BusinessContactWithQrDTO resultDTO = new BusinessContactWithQrDTO();
         BeanUtils.copyProperties(contactDTO, resultDTO);
 
@@ -134,8 +134,8 @@ public class BusinessContactService {
 
     @Transactional
     public void setWebhookForContact(Long contactId, SetWebhookDTO webhookDTO) {
-        BusinessContact contact =
-                contactRepository
+        BusinessChannel contact =
+                channelRepository
                         .findById(contactId)
                         .orElseThrow(
                                 () ->
@@ -144,9 +144,9 @@ public class BusinessContactService {
 
         String instanceName =
                 contact.getProperties().stream()
-                        .filter(p -> p.getKey() == ContactPropertyKey.INSTANCE_ID)
+                        .filter(p -> p.getKey() == ChannelPropertyKey.INSTANCE_ID)
                         .findFirst()
-                        .map(BusinessContactProperty::getValue)
+                        .map(BusinessChannelProperty::getValue)
                         .orElseThrow(
                                 () ->
                                         new ResponseStatusException(
@@ -158,18 +158,18 @@ public class BusinessContactService {
     }
 
     @Transactional(readOnly = true)
-    public List<BusinessContactDTO> getContactsByBusinessId(UUID businessId) {
+    public List<BusinessChannelDTO> getContactsByBusinessId(UUID businessId) {
         if (!businessRepository.existsById(businessId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Business not found");
         }
-        return contactRepository.findByBusinessId(businessId).stream()
+        return channelRepository.findByBusinessId(businessId).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public BusinessContactDTO getContactById(Long id) {
-        return contactRepository
+    public BusinessChannelDTO getContactById(Long id) {
+        return channelRepository
                 .findById(id)
                 .map(this::convertToDTO)
                 .orElseThrow(
@@ -179,7 +179,7 @@ public class BusinessContactService {
     }
 
     @Transactional
-    public BusinessContactDTO createContact(UUID businessId, CreateBusinessContactDTO createDTO) {
+    public BusinessChannelDTO createContact(UUID businessId, CreateBusinessChannelDTO createDTO) {
         Business business =
                 businessRepository
                         .findById(businessId)
@@ -188,7 +188,7 @@ public class BusinessContactService {
                                         new ResponseStatusException(
                                                 HttpStatus.NOT_FOUND, "Business not found"));
 
-        BusinessContact contact = new BusinessContact();
+        BusinessChannel contact = new BusinessChannel();
         contact.setBusiness(business);
         contact.setType(createDTO.getType());
         contact.setValue(createDTO.getValue());
@@ -197,32 +197,32 @@ public class BusinessContactService {
         contact.setConnected(false); // Default to false
         contact.setActive(true); // Default to true
 
-        BusinessContact savedContact = contactRepository.save(contact);
+        BusinessChannel savedChannel = channelRepository.save(contact);
 
         if (createDTO.getProperties() != null) {
-            List<BusinessContactProperty> properties =
+            List<BusinessChannelProperty> properties =
                     createDTO.getProperties().entrySet().stream()
                             .map(
                                     entry -> {
-                                        BusinessContactProperty property =
-                                                new BusinessContactProperty();
-                                        property.setContact(savedContact);
+                                        BusinessChannelProperty property =
+                                                new BusinessChannelProperty();
+                                        property.setChannel(savedChannel);
                                         property.setKey(entry.getKey());
                                         property.setValue(entry.getValue());
                                         return property;
                                     })
                             .collect(Collectors.toList());
             propertyRepository.saveAll(properties);
-            savedContact.setProperties(properties);
+            savedChannel.setProperties(properties);
         }
 
-        return convertToDTO(savedContact);
+        return convertToDTO(savedChannel);
     }
 
     @Transactional
-    public BusinessContactDTO updateContact(Long id, CreateBusinessContactDTO updateDTO) {
-        BusinessContact contact =
-                contactRepository
+    public BusinessChannelDTO updateContact(Long id, CreateBusinessChannelDTO updateDTO) {
+        BusinessChannel contact =
+                channelRepository
                         .findById(id)
                         .orElseThrow(
                                 () ->
@@ -241,28 +241,28 @@ public class BusinessContactService {
                     .getProperties()
                     .forEach(
                             (key, value) -> {
-                                BusinessContactProperty property = new BusinessContactProperty();
-                                property.setContact(contact);
+                                BusinessChannelProperty property = new BusinessChannelProperty();
+                                property.setChannel(contact);
                                 property.setKey(key);
                                 property.setValue(value);
                                 contact.getProperties().add(property);
                             });
         }
 
-        BusinessContact savedContact = contactRepository.save(contact);
+        BusinessChannel savedContact = channelRepository.save(contact);
         return convertToDTO(savedContact);
     }
 
     @Transactional
     public void deleteContact(Long id) {
-        if (!contactRepository.existsById(id)) {
+        if (!channelRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
         }
-        contactRepository.deleteById(id);
+        channelRepository.deleteById(id);
     }
 
-    private BusinessContactDTO convertToDTO(BusinessContact contact) {
-        BusinessContactDTO dto = new BusinessContactDTO();
+    private BusinessChannelDTO convertToDTO(BusinessChannel contact) {
+        BusinessChannelDTO dto = new BusinessChannelDTO();
         dto.setId(contact.getId());
         dto.setBusinessId(contact.getBusiness().getId());
         dto.setType(contact.getType());
@@ -273,12 +273,12 @@ public class BusinessContactService {
         dto.setActive(contact.isActive());
 
         if (contact.getProperties() != null) {
-            Map<ContactPropertyKey, String> properties =
+            Map<ChannelPropertyKey, String> properties =
                     contact.getProperties().stream()
                             .collect(
                                     Collectors.toMap(
-                                            BusinessContactProperty::getKey,
-                                            BusinessContactProperty::getValue));
+                                            BusinessChannelProperty::getKey,
+                                            BusinessChannelProperty::getValue));
             dto.setProperties(properties);
         }
 

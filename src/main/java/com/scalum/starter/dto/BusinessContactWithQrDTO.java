@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class BusinessContactWithQrDTO extends BusinessContactDTO {
+public class BusinessContactWithQrDTO extends BusinessChannelDTO {
     private CreateInstanceResponse.Qrcode qrcode;
     private String instanceName;
 }

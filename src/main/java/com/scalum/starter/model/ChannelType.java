@@ -1,6 +1,6 @@
 package com.scalum.starter.model;
 
-public enum ContactType {
+public enum ChannelType {
     WHATSAPP,
     EMAIL,
     API_CALLBACK,

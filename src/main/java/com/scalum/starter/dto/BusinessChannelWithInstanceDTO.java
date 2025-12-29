@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class BusinessContactWithInstanceDTO extends BusinessContactDTO {
+public class BusinessChannelWithInstanceDTO extends BusinessChannelDTO {
     private String instanceName;
     private String instanceStatus;
 }

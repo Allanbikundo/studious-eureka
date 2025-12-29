@@ -1,7 +1,7 @@
 package com.scalum.starter.dto;
 
-import com.scalum.starter.model.ContactPropertyKey;
-import com.scalum.starter.model.ContactType;
+import com.scalum.starter.model.ChannelPropertyKey;
+import com.scalum.starter.model.ChannelType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.Map;
@@ -9,11 +9,11 @@ import java.util.UUID;
 import lombok.Data;
 
 @Data
-public class BusinessContactDTO {
+public class BusinessChannelDTO {
     private Long id;
     private UUID businessId;
 
-    @NotNull private ContactType type;
+    @NotNull private ChannelType type;
 
     @NotBlank private String value;
 
@@ -22,5 +22,5 @@ public class BusinessContactDTO {
     private boolean isConnected;
     private boolean isActive;
 
-    private Map<ContactPropertyKey, String> properties;
+    private Map<ChannelPropertyKey, String> properties;
 }

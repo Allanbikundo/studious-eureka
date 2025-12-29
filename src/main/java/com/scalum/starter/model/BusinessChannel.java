@@ -11,8 +11,8 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = false, exclude = "properties")
 @ToString(exclude = "properties")
-@Table(name = "business_contact")
-public class BusinessContact extends Auditable {
+@Table(name = "business_channel")
+public class BusinessChannel extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,12 +24,12 @@ public class BusinessContact extends Auditable {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ContactType type;
+    private ChannelType type;
 
     @Column(nullable = false)
-    private String value; // Phone number, email, or URL
+    private String value;
 
-    private String label; // e.g., "Support", "Sales"
+    private String label;
 
     private boolean isPrimary;
 
@@ -39,6 +39,6 @@ public class BusinessContact extends Auditable {
     @Column(nullable = false, columnDefinition = "boolean default true")
     private boolean isActive = true;
 
-    @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BusinessContactProperty> properties = new ArrayList<>();
+    @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BusinessChannelProperty> properties = new ArrayList<>();
 }

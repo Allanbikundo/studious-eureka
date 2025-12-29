@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("v1")
 @RequiredArgsConstructor
-@Tag(name = "Business Contact Management", description = "APIs for managing business contacts")
-public class BusinessContactController {
+@Tag(name = "Business  Management", description = "APIs for managing business contacts")
+public class BusinessChannelController {
 
     private final BusinessContactService contactService;
 
     @PostMapping("/businesses/{businessId}/contacts/instance")
     @Operation(summary = "Create a business contact and a new Evolution API instance")
-    public ResponseEntity<BusinessContactWithInstanceDTO> createContactAndInstance(
+    public ResponseEntity<BusinessChannelWithInstanceDTO> createChannelAndInstance(
             @PathVariable UUID businessId,
             @Valid @RequestBody CreateInstanceAndContactDTO createDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -45,29 +45,29 @@ public class BusinessContactController {
 
     @GetMapping("/businesses/{businessId}/contacts")
     @Operation(summary = "List contacts for a business")
-    public ResponseEntity<List<BusinessContactDTO>> getContactsByBusiness(
+    public ResponseEntity<List<BusinessChannelDTO>> getContactsByBusiness(
             @PathVariable UUID businessId) {
         return ResponseEntity.ok(contactService.getContactsByBusinessId(businessId));
     }
 
     @PostMapping("/businesses/{businessId}/contacts")
     @Operation(summary = "Create a contact for a business (without Evolution API instance)")
-    public ResponseEntity<BusinessContactDTO> createContact(
-            @PathVariable UUID businessId, @Valid @RequestBody CreateBusinessContactDTO createDTO) {
+    public ResponseEntity<BusinessChannelDTO> createContact(
+            @PathVariable UUID businessId, @Valid @RequestBody CreateBusinessChannelDTO createDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(contactService.createContact(businessId, createDTO));
     }
 
     @GetMapping("/contacts/{contactId}")
     @Operation(summary = "Get a contact by ID")
-    public ResponseEntity<BusinessContactDTO> getContact(@PathVariable Long contactId) {
+    public ResponseEntity<BusinessChannelDTO> getContact(@PathVariable Long contactId) {
         return ResponseEntity.ok(contactService.getContactById(contactId));
     }
 
     @PutMapping("/contacts/{contactId}")
     @Operation(summary = "Update a contact")
-    public ResponseEntity<BusinessContactDTO> updateContact(
-            @PathVariable Long contactId, @Valid @RequestBody CreateBusinessContactDTO updateDTO) {
+    public ResponseEntity<BusinessChannelDTO> updateContact(
+            @PathVariable Long contactId, @Valid @RequestBody CreateBusinessChannelDTO updateDTO) {
         return ResponseEntity.ok(contactService.updateContact(contactId, updateDTO));
     }
 

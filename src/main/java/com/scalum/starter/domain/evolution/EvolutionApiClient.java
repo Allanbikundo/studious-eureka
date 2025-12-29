@@ -1,9 +1,9 @@
 package com.scalum.starter.domain.evolution;
 
 import com.scalum.starter.domain.evolution.dto.*;
-import com.scalum.starter.model.BusinessContact;
-import com.scalum.starter.model.BusinessContactProperty;
-import com.scalum.starter.model.ContactPropertyKey;
+import com.scalum.starter.model.BusinessChannel;
+import com.scalum.starter.model.BusinessChannelProperty;
+import com.scalum.starter.model.ChannelPropertyKey;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -142,11 +142,11 @@ public class EvolutionApiClient {
         }
     }
 
-    private Map<ContactPropertyKey, String> getPropertiesMap(BusinessContact contact) {
+    private Map<ChannelPropertyKey, String> getPropertiesMap(BusinessChannel contact) {
         return contact.getProperties().stream()
                 .collect(
                         Collectors.toMap(
-                                BusinessContactProperty::getKey,
-                                BusinessContactProperty::getValue));
+                                BusinessChannelProperty::getKey,
+                                BusinessChannelProperty::getValue));
     }
 }

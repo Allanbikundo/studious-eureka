@@ -1,6 +1,6 @@
 package com.scalum.starter.model;
 
-public enum ContactPropertyKey {
+public enum ChannelPropertyKey {
     INSTANCE_ID,
     API_TOKEN,
     WEBHOOK_SECRET,
