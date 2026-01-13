@@ -24,10 +24,13 @@ public class WebhookService {
                     objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(payload);
             log.info("Received webhook for instance {}: \n{}", instanceId, jsonPayload);
 
-            // check if the event is an Upsert
-            if (payload.getEvent().equals("messages.upsert")) {
+            // check if the event is an Upsert and its not from me
+            if (payload.getEvent().equals("messages.upsert")
+                    && !payload.getData().getKey().getFromMe()) {
                 String phoneNumber = payload.getData().getKey().getRemoteJid().split("@")[0];
-                evolutionApiClient.sendMessage(phoneNumber, "Hello there", payload.getInstance());
+                String name = payload.getData().getPushName();
+                //                evolutionApiClient.sendMessage(phoneNumber, "Hello there",
+                // payload.getInstance());
             }
         } catch (JsonProcessingException e) {
             log.error("Error processing webhook payload for instance {}", instanceId, e);

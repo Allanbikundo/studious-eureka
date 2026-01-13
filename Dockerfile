@@ -1,5 +1,5 @@
 # Base stage for dependency resolution
-FROM maven:3.9-eclipse-temurin-25-alpine AS base
+FROM maven:3.9-eclipse-temurin-21-alpine AS base
 WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
