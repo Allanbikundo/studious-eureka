@@ -6,13 +6,13 @@ services:
       - "8025:8025" # Web UI
 
   backend:
-    image: ghcr.io/allanbikundo/studious-eureka:e41086673c01660d4768078b4e448a2ea408b8de
+    image: ghcr.io/allanbikundo/studious-eureka:b2859e7323e3e5ad82f5f2b02892b788e79f2cc9
     ports:
       - 8090:8080
     volumes:
-      - ./application.yml:/app/application.yml
+      - ./application.yaml:/app/application.yaml
     environment:
-      - SPRING_CONFIG_LOCATION=file:/app/application.yml
+      - SPRING_CONFIG_LOCATION=file:/app/application.yaml
   postgres:
     image: postgres:17
     environment:
