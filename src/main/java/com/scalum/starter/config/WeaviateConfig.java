@@ -3,9 +3,8 @@ package com.scalum.starter.config;
 import io.weaviate.client6.v1.api.WeaviateClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
+// @Configuration
 public class WeaviateConfig {
 
     @Value("${weaviate.host}")
